@@ -18,7 +18,7 @@ export function createusernew(req,res){
         
     user.save().then(() => {
         res.json({
-            message:"user created successfully"
+            message:"New user created successfully"
         })
     })};
 
@@ -41,9 +41,49 @@ export function loginuser(req,res){
                 res.json({
                     matching : ispasswordcorrect
                 })
+
+                if(ispasswordcorrect){
+
+                    const payload={
+                        email:user.email,
+                        firstname:user.firstname,
+                        lastname:user.lastname,
+                        role:user.role,
+                        isemailverified:user.isemailverified,
+                        image:user.image 
+                    };
+
+                    const token=jwt.sign(payload,"SECRETKEY" , {expiresIn:"12h"})
+
+                res.json({
+                    matching : ispasswordcorrect,
+                    message : "login successful",
+                    token : token
+                })}
+                else{
+                    res.status(403).json({
+                    message : "login failed"
+
+                    })
+                }
             }
         }
     )};
+
+    export function isadmin(req){
+    if(req.user == null){
+        return false
+        }
+        
+    
+
+    if(req.user.role != "admin"){
+      return false  
+    }
+
+    return true
+   }
+    
 
 
 
