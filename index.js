@@ -8,6 +8,8 @@ import productrouter from "./routes/productrouter.js";
 
 dotenv.config();
 
+console.log()
+
 
 
 const app = express();
