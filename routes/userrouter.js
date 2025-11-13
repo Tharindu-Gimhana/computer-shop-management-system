@@ -6,7 +6,7 @@ const userrouter=express.Router();
 
 userrouter.post("/" , createusernew );
 
-userrouter.get("/" , loginuser );
+userrouter.post("/login" , loginuser );
 
 
 

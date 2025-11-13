@@ -2,11 +2,18 @@ import express from "express";
 import userrouter from "./routes/userrouter.js";
 import mongoose from "mongoose";
 import jwt from "jsonwebtoken";
+import cors from "cors";
+import dotenv from "dotenv";
+import productrouter from "./routes/productrouter.js";
+
+dotenv.config();
 
 
 
 const app = express();
+app.use(cors());
 app.use(express.json());  //middleware to parse json data
+
 
 app.use((req,res,next)=>{
 
@@ -16,7 +23,7 @@ app.use((req,res,next)=>{
     if (authorizationheader != null){
         const token = authorizationheader.replace("Bearer ","")
         
-        jwt.verify(token,"SECRETKEY",(error,content)=>{
+        jwt.verify(token,process.env.SECRETKEY,(error,content)=>{
         if(content ==null){
             console.log("invalid user")
             res.json({message :"invalid token"})
@@ -34,9 +41,10 @@ app.use((req,res,next)=>{
 })
 
  //this is not a middelware , from this part we can turn the traffic come as students to the student route.
-app.use("/users",userrouter )
+app.use("/api/users",userrouter )
+app.use("/api/products",productrouter )
 
-const mongourl="MONGO_URL ";  //mongo db url
+const mongourl=process.env.MONGO_URL;  //mongo db url
 
 mongoose.connect(mongourl).then(
     ()=>{console.log("connected to mongodb cluster")}

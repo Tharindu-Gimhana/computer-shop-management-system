@@ -101,7 +101,7 @@ export function getproductbyid(req, res){
     }
 
     const prodid = req.params.productid
-    Product.findOne({productid:productid}).then(
+    Product.findOne({productid:prodid}).then(
         (product) => {
             if (product == null){
                 res.status(404).json({
