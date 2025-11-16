@@ -8,7 +8,7 @@ import productrouter from "./routes/productrouter.js";
 
 dotenv.config();
 
-console.log()
+
 
 
 
@@ -27,6 +27,7 @@ app.use((req,res,next)=>{
         
         jwt.verify(token,process.env.SECRETKEY,(error,content)=>{
         if(content ==null){
+            
             console.log("invalid user")
             res.json({message :"invalid token"})
         }

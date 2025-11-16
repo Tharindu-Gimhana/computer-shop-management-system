@@ -40,7 +40,6 @@ export function loginuser(req,res){
 
                 const ispasswordcorrect = bcrypt.compareSync(password,user.password)
                 
-                matching : ispasswordcorrect
             
                 if(ispasswordcorrect){
 
@@ -53,12 +52,13 @@ export function loginuser(req,res){
                         image:user.image 
                     };
 
-                    const token=jwt.sign(payload,process.env.SECRETKEY, {expiresIn:"12h"})
+                    const token=jwt.sign(payload,process.env.SECRETKEY, {expiresIn:"128h"})
 
                 res.json({
                     matching : ispasswordcorrect,
-                    message : "login successful",
+                    message : "userr login successful",
                     token : token
+                
                 })}
                 else{
                     res.status(403).json({
