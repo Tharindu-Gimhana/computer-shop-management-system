@@ -5,6 +5,7 @@ import jwt from "jsonwebtoken";
 import cors from "cors";
 import dotenv from "dotenv";
 import productrouter from "./routes/productrouter.js";
+import orderRouter from "./routes/orderrouter.js";
 
 dotenv.config();
 
@@ -46,6 +47,7 @@ app.use((req,res,next)=>{
  //this is not a middelware , from this part we can turn the traffic come as students to the student route.
 app.use("/api/users",userrouter )
 app.use("/api/products",productrouter )
+app.use("/api/orders",orderRouter)
 
 const mongourl=process.env.MONGO_URL;  //mongo db url
 

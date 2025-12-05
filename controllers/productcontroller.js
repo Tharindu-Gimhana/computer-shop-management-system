@@ -93,12 +93,7 @@ export function updateproduct(req , res ){
         }
 
 export function getproductbyid(req, res){
-    if (! isadmin(req)){
-        res.status(403).json({
-                message :"forbidden"
-        })
-        return
-    }
+    
 
     const prodid = req.params.productid
     Product.findOne({productid:prodid}).then(
@@ -112,19 +107,17 @@ export function getproductbyid(req, res){
                 if (product.isavailable){
                     res.json(product)}
                 else{
-                    if(isadmin(req)){
-                        res.json(product)
-                    }else{
                         res.status(404).json({
                             message :"product not found"
                         })
                     }
 
                 }
-                }
             }
+            )
+            
         
-    ).catch(
+    .catch(
         (error) => {
             res.status(500).json({
                 message : "error fetching product",
