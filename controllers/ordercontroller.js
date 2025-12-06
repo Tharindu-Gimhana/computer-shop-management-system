@@ -3,7 +3,7 @@ import Product from "../models/Product.js";
 import { isadmin } from "./UserControllers.js";
 
 export async function createOrder(req, res) {
-    console.log(req.body)
+    console.log("this is req body",req.body)
 	//ORD000001
     if(req.user == null){
         res.status(401).json({
@@ -34,7 +34,7 @@ export async function createOrder(req, res) {
 
         for(let i = 0; i < req.body.items.length; i++){
 
-            const product = await Product.findOne({productID : req.body.items[i].productID}) //get the items one by one
+            const product = await Product.findOne({productid : req.body.items[i].productID}) //get the items one by one
 
             if(product == null){
                 return res.status(400).json({
@@ -50,7 +50,7 @@ export async function createOrder(req, res) {
             // }
 
             items.push({                        //items is a variable that has been located above
-                productid : product.productid,
+                productID : product.productid,
                 name : product.name,
                 price : product.price,
                 quantity : req.body.items[i].quantity,
@@ -90,6 +90,7 @@ export async function createOrder(req, res) {
         })
 
 	} catch (error) {
+        console.log("errorrrr")
 		return res.status(500).json({
 			message: "Error Placing order",
 			error: error.message,
