@@ -13,7 +13,6 @@ export function createusernew(req,res){
         firstname:data.firstname,
         lastname:data.lastname,
         password:hashedpwrd,
-        role:data.role
 
     })
         
@@ -85,6 +84,17 @@ export function loginuser(req,res){
 
     return true
    }
+
+   export function getUser(req, res) {
+	if (req.user == null) {
+		res.status(401).json({
+			message: "Unauthorized",
+		});
+		return;
+	}
+
+	res.json(req.user);
+}
     
 
 
