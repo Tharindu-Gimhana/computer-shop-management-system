@@ -95,7 +95,79 @@ export function loginuser(req,res){
 
 	res.json(req.user);
 }
-    
+
+
+export async function googleLogin(req, res) {
+	console.log(req.body.token);
+	try {
+		const response = await axios.get(
+			"https://www.googleapis.com/oauth2/v3/userinfo",
+			{
+				headers: {
+					Authorization: `Bearer ${req.body.token}`,
+				},
+			}
+		);
+
+		console.log(response.data);
+
+		const user = await User.findOne({ email: response.data.email });
+		if (user == null) {
+			const newUser = new User({
+				email: response.data.email,
+				firstname: response.data.given_name,
+				lastname: response.data.family_name,
+				password: "123",
+				image : response.data.picture,
+			})
+			await newUser.save();
+
+			const payload = {
+				email: newUser.email,
+				firstname: newUser.firstname,
+				lastname: newUser.lastname,
+				role: newUser.role,
+				isemailVerified: true,
+				image: newUser.image,
+			};
+
+			const token = jwt.sign(payload, process.env.SECRETKEY, {
+				expiresIn: "150h",
+			});
+
+			res.json({
+				message: "Login successful",
+				token: token,
+				role: user.role,
+			});
+
+		} else {
+			const payload = {
+				email: user.email,
+				firstname: user.firstname,
+				lastname: user.lastname,
+				role: user.role,
+				isemailVerified: user.isemailVerified,
+				image: user.image,
+			};
+
+			const token = jwt.sign(payload, process.env.SECRETKEY, {
+				expiresIn: "150h",
+			});
+
+			res.json({
+				message: "Login successful",
+				token: token,
+				role: user.role,
+			});
+		}
+	} catch (error) {
+		res.status(500).json({
+			message: "Google login failed",
+			error: error.message,
+		});
+	}
+}
 
 
 
