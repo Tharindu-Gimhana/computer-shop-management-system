@@ -1,6 +1,28 @@
 import bcrypt from "bcrypt"
 import User from "../models/user.js";
 import jwt from "jsonwebtoken";
+import axios from "axios";
+import OTP from "../models/otp.js";
+import nodemailer from "nodemailer";
+import dotenv from "dotenv"
+
+dotenv.config(); // 👈 add this
+
+
+
+
+
+const transporter = nodemailer.createTransport({
+	service: "gmail",
+	host: "smtp.gmail.com",
+	port: 587,
+	secure: false,
+	auth: {
+		user: "tharindugimhana908@gmail.com",
+		pass: process.env.Gmail_pwrd
+	},
+});
+
 
 
 export function createusernew(req,res){
@@ -98,6 +120,7 @@ export function loginuser(req,res){
 
 
 export async function googleLogin(req, res) {
+	console.log("this is the token that is sent from google ")
 	console.log(req.body.token);
 	try {
 		const response = await axios.get(
@@ -109,7 +132,7 @@ export async function googleLogin(req, res) {
 			}
 		);
 
-		console.log(response.data);
+		console.log("this is the details of user that used the google login , from google",response.data);
 
 		const user = await User.findOne({ email: response.data.email });
 		if (user == null) {
@@ -127,7 +150,7 @@ export async function googleLogin(req, res) {
 				firstname: newUser.firstname,
 				lastname: newUser.lastname,
 				role: newUser.role,
-				isemailVerified: true,
+				isemailverified: true,
 				image: newUser.image,
 			};
 
@@ -138,7 +161,7 @@ export async function googleLogin(req, res) {
 			res.json({
 				message: "Login successful",
 				token: token,
-				role: user.role,
+				role: newUser.role,
 			});
 
 		} else {
@@ -147,7 +170,7 @@ export async function googleLogin(req, res) {
 				firstname: user.firstname,
 				lastname: user.lastname,
 				role: user.role,
-				isemailVerified: user.isemailVerified,
+				isemailverified: user.isemailverified,
 				image: user.image,
 			};
 
@@ -170,7 +193,102 @@ export async function googleLogin(req, res) {
 }
 
 
+export async function sendOTP(req, res) {
+	try {
+		const email = req.params.email;
+		console.log("REQUEST EMAIL:", req.params.email);
 
+		const user = await User.findOne({
+			email: email,
+		});
+		if (user == null) {
+			console.log("yes user null");
+			res.status(404).json({
+				message: "User not found",
+			});
+			return;
+		}
+
+		await OTP.deleteMany({
+			email: email,
+			
+		});console.log("ok");
+
+		//generate random 6 digit otp
+		const otpCode = Math.floor(100000 + Math.random() * 900000).toString();
+		console.log("this is otp code",otpCode);
+
+		const Otp = new OTP({
+			email: email,
+			otp: otpCode,
+		});  console.log("new otp saved");
+
+		await Otp.save();
+
+		const message = {
+			from: "danceclubfot@gmail.com",
+			to: email,
+			subject: "Your OTP Code",
+			text: "Your OTP code is " + otpCode,
+		};
+
+		transporter.sendMail(message, (err, info) => {
+			if (err) {
+				res.status(500).json({
+					message: "Failed to send OTP",
+					error: err.message,
+				});
+				console.log("error point 1",err);
+			} else {
+				res.json({
+					message: "OTP sent successfully",
+				});
+			}
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: "Failed to send OTP",
+			error: error.message,
+		});
+		console.log("error point 2",error);
+	}
+}
+
+
+export async function validateOTPAndUpdatePassword(req, res) {
+	try {
+		const otp = req.body.otp;
+		const newPassword = req.body.newPassword;
+		const email = req.body.email;
+
+		const otpRecord = await OTP.findOne({ email: email, otp: otp });
+		if (otpRecord == null) {
+			res.status(400).json({
+				message: "Invalid OTP",
+			});
+			return;
+		}
+
+		await OTP.deleteMany({ email: email });
+
+		const hashedPassword = bcrypt.hashSync(newPassword, 10);
+
+		await User.updateOne(
+			{ email: email },
+			{
+				$set : {password: hashedPassword, isemailverified: true} ,
+			}
+		);
+		res.json({
+			message: "Password updated successfully",
+		});
+	} catch (error) {
+		res.status(500).json({
+			message: "Failed to update password",
+			error: error.message,
+		});
+	}
+}
 
 
 

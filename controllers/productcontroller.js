@@ -129,4 +129,30 @@ export function getproductbyid(req, res){
 }
  
 
+export async function searchProducts(req,res){
+	const query = req.params.query
+
+	try {
+
+		const products = await Product.find(
+			{
+				$or : [
+					{ name : { $regex : query , $options : "i" } },
+					{ altnames : { $elemMatch : { $regex : query , $options : "i" } } }
+				],
+				isavailable : true
+			}
+		)
+
+		return res.json(products)
+	}catch(error){
+		res.status(500).json({
+			message : "Error searching products",
+			error : error.message
+		})
+	}
+
+}
+
+
 
